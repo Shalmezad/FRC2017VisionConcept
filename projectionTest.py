@@ -155,11 +155,27 @@ def main():
         # Handle input:
         keys=pygame.key.get_pressed()
         global camera_angle_degrees
+        global camera_position_inches
         turn_speed_degrees = 0.4
+        move_speed_inches = 0.1
         if keys[pygame.K_LEFT]:
             camera_angle_degrees -= turn_speed_degrees
         if keys[pygame.K_RIGHT]:
             camera_angle_degrees += turn_speed_degrees
+        if keys[pygame.K_DOWN]:
+            camera_angle_radians = math.radians(camera_angle_degrees + 90)
+            x_delta = math.cos(camera_angle_radians)
+            y_delta = math.sin(camera_angle_radians)
+            new_x = camera_position_inches[0] + move_speed_inches * x_delta
+            new_y = camera_position_inches[1] + move_speed_inches * y_delta
+            camera_position_inches = (new_x, new_y)
+        if keys[pygame.K_UP]:
+            camera_angle_radians = math.radians(camera_angle_degrees + 90)
+            x_delta = math.cos(camera_angle_radians)
+            y_delta = math.sin(camera_angle_radians)
+            new_x = camera_position_inches[0] + move_speed_inches * x_delta * -1
+            new_y = camera_position_inches[1] + move_speed_inches * y_delta * -1
+            camera_position_inches = (new_x, new_y)
 
         screen.fill((255, 255, 255))
         # Drawing code here:
