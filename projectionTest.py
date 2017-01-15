@@ -10,6 +10,8 @@ PIXELS_PER_INCH = 6
 camera_size = (640, 480)
 screen_size = (camera_size[0] * 2, camera_size[1] * 2)
 top_down_view = [0, 0, camera_size[0], camera_size[1] * 2]
+camera_view = [camera_size[0], 0, camera_size[0], camera_size[1]]
+debugger_view = [camera_size[0], camera_size[1], camera_size[0], camera_size[1]]
 
 camera_position_inches = (0, 20)
 camera_angle_degrees = 0 # We'll defined 0 as facing target dead on.
@@ -133,14 +135,52 @@ def drawTopDown(screen):
     pygame.draw.line(screen, LIGHT_GRAY, camera_position_view, camera_left,2)
     pygame.draw.line(screen, LIGHT_GRAY, camera_position_view, camera_right,2)
 
+# http://stackoverflow.com/a/39005543/978509
+# Man I hope their math is right...
+def get2dPoint(x,y,z, screen_width, screen_height, fov):
+    x_prime = ( x * ( screen_width / 2 ) / math.tan( fov / 2 ) ) / ( z + ( ( screen_width / 2 ) / math.tan( fov / 2 ) ) )
+    y_prime = ( y * ( screen_height / 2 ) / math.tan( fov / 2 ) ) / ( z + ( ( screen_height / 2 ) / math.tan( fov / 2 ) ) )
+    return (x_prime, y_prime)
+
+def drawPoint(screen,point, view):
+    point2 = (view[0] + point[0], view[1] + point[1])
+    pygame.draw.circle(screen, LIGHT_GRAY, point2,4)
 
 
+def drawCamera(screen):
+    pygame.draw.rect(screen, BLACK, [camera_size[0], 0, camera_size[0], camera_size[1]])
+    # Figure out where our rects are in 3d space:
+    # Translate them based on the camera position:
+    # Get their 2d points:
+    drawPoint(screen, (50,50), camera_view)
 
+
+def drawDebugger(screen, font):
+    x = debugger_view[0] + 4
+    y = debugger_view[1] + 4
+    text = font.render("Debugger", True, (0, 128, 0))
+    screen.blit(text, (x, y))
+    y += text.get_height() + 2
+    camera_position_text = "Position: ("
+    camera_position_text += str(round(camera_position_inches[0],2))
+    camera_position_text += ","
+    camera_position_text += str(round(camera_position_inches[1],2))
+    camera_position_text += ")"
+    text = font.render(camera_position_text, True, (0,128,0))
+    screen.blit(text, (x, y))
+    y += text.get_height() + 2
+    camera_angle_text = "Angle: "
+    camera_angle_text += str(round(camera_angle_degrees,2))
+    camera_angle_text += " degrees"
+    text = font.render(camera_angle_text, True, (0,128,0))
+    screen.blit(text, (x, y))
 
 
 
 def main():
     pygame.init()
+
+    font = pygame.font.SysFont("comicsansms", 12)
 
     screen = pygame.display.set_mode(screen_size)
 
@@ -156,8 +196,8 @@ def main():
         keys=pygame.key.get_pressed()
         global camera_angle_degrees
         global camera_position_inches
-        turn_speed_degrees = 0.4
-        move_speed_inches = 0.1
+        turn_speed_degrees = 0.6
+        move_speed_inches = 0.3
         if keys[pygame.K_LEFT]:
             camera_angle_degrees -= turn_speed_degrees
         if keys[pygame.K_RIGHT]:
@@ -182,7 +222,9 @@ def main():
         # Draw our top down view:
         drawTopDown(screen)
         # Draw our camera picture
-        pygame.draw.rect(screen, BLACK, [camera_size[0], 0, camera_size[0], camera_size[1]])
+        drawCamera(screen)
+        # Draw debug information
+        drawDebugger(screen, font)
 
         pygame.display.flip()
         clock.tick(60)
