@@ -1,0 +1,2 @@
+run:
+	python projectionTest.py
