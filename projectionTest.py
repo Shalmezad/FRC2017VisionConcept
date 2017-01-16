@@ -148,23 +148,32 @@ def drawTopDown(screen):
 # z is up down (+z = up)
 # x is left/right of the peg
 # y is in/out of the peg ( +y = out of peg)
-def get2dPoint(x,y,z, screen_width, screen_height, fov_degrees):
+def get2dPoint(x,y,z, screen_width, screen_height, fov_width_degrees, fov_height_degrees):
     #x_prime = ( x * ( screen_width / 2 ) / math.tan( fov / 2 ) ) / ( z + ( ( screen_width / 2 ) / math.tan( fov / 2 ) ) )
     #y_prime = ( y * ( screen_height / 2 ) / math.tan( fov / 2 ) ) / ( z + ( ( screen_height / 2 ) / math.tan( fov / 2 ) ) )
     #return (x_prime, y_prime)
     # Math shouldn't be that bad, we should be able to handle this
+    delta_x = x-camera_position_inches[0]
+    delta_y = y-camera_position_inches[1]
+    delta_z = z-camera_height_inches
     # So, we have our camera position/angle
     # What we need is to figure out the angle between the point, and our camera center
     # So, find the angle to the camera:
-    angle_x = math.degrees(math.atan2(y-camera_position_inches[1], x-camera_position_inches[0]))+90
+    angle_x = math.degrees(math.atan2(delta_y, delta_x))+90
     # Adjust based on camera angle:
     angle_x -= camera_angle_degrees
     # And based on our fov...
-    x = screen_width * (angle_x/fov_degrees)
+    x = screen_width * (angle_x/fov_width_degrees)
 
+    # Find the angle to our camera:
+    # In order to do this, we need the distance to the point from a top down perspective:
+    distance = math.sqrt(math.pow(delta_y,2) + math.pow(delta_x,2))
+    angle_y = math.degrees(math.atan2(z-camera_height_inches,distance))
+    #print "Distance = " + str(distance)
+    #print "Angle y = " + str(angle_y)
+    y = screen_height * (angle_y / fov_height_degrees)
 
-
-    y = 0
+    #y = 0
     return (x,y)
 
 def drawPoint(screen,point, view):
@@ -186,8 +195,16 @@ def drawCamera(screen):
     left_target_top_left = (left_target_top_left_x, left_target_top_left_y,left_target_top_left_z)
     left_target_top_right_x = left_target_top_left_x + SINGLE_STRIPE_WIDTH_INCHES
     left_target_top_right_y = 0
-    left_target_top_right_z = left_target_top_left_x
-    left_target_top_right = (left_target_top_right_x,left_target_top_right_y,left_target_top_right_y)
+    left_target_top_right_z = left_target_top_left_z
+    left_target_top_right = (left_target_top_right_x,left_target_top_right_y,left_target_top_right_z)
+    left_target_bottom_left_x = left_target_top_left_x
+    left_target_bottom_left_y = 0
+    left_target_bottom_left_z = SINGLE_STRIPE_BOTTOM_INCHES
+    left_target_bottom_left = (left_target_bottom_left_x,left_target_bottom_left_y,left_target_bottom_left_z)
+    left_target_bottom_right_x = left_target_top_right_x
+    left_target_bottom_right_y = 0
+    left_target_bottom_right_z = left_target_bottom_left_z
+    left_target_bottom_right = (left_target_bottom_right_x, left_target_bottom_right_y, left_target_bottom_right_z)
 
     # RIGHT
     right_target_top_right_x = VISION_FULL_WIDTH_INCHES/2
@@ -198,12 +215,20 @@ def drawCamera(screen):
     right_target_top_left_y = 0
     right_target_top_left_z = right_target_top_right_z
     right_target_top_left = (right_target_top_left_x,right_target_top_left_y,right_target_top_left_z)
+    right_target_bottom_right_x = right_target_top_right_x
+    right_target_bottom_right_y = 0
+    right_target_bottom_right_z = SINGLE_STRIPE_BOTTOM_INCHES
+    right_target_bottom_right = (right_target_bottom_right_x, right_target_bottom_right_y, right_target_bottom_right_z)
+    right_target_bottom_left_x = right_target_top_left_x
+    right_target_bottom_left_y = 0
+    right_target_bottom_left_z = right_target_bottom_right_z
+    right_target_bottom_left = (right_target_bottom_left_x,right_target_bottom_left_y,right_target_bottom_left_z)
 
-    points = [left_target_top_left, left_target_top_right,
-              right_target_top_left, right_target_top_right]
+    points = [left_target_top_left, left_target_top_right, left_target_bottom_left, left_target_bottom_right,
+              right_target_top_left, right_target_top_right,right_target_bottom_left, right_target_bottom_right]
     # Get their 2d points:
     for point in points:
-        new_point = get2dPoint(point[0],point[1],point[2], camera_size[0], camera_size[1], CAMERA_VIEW_ANGLE_WIDTH_DEGREES)
+        new_point = get2dPoint(point[0],point[1],point[2], camera_size[0], camera_size[1], CAMERA_VIEW_ANGLE_WIDTH_DEGREES, CAMERA_VIEW_ANGLE_HEIGHT_DEGREES)
         drawPoint(screen, new_point, camera_view)
 
 
