@@ -24,8 +24,8 @@
       <file leaf-file-name="projectionTest.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/projectionTest.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="62" column="0" selection-start-line="62" selection-start-column="0" selection-end-line="62" selection-end-column="0" />
+            <state relative-caret-position="287">
+              <caret line="210" column="33" selection-start-line="210" selection-start-column="33" selection-end-line="210" selection-end-column="33" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
                 <element signature="e#862#886#0" expanded="false" />
@@ -628,8 +628,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/projectionTest.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="62" column="0" selection-start-line="62" selection-start-column="0" selection-end-line="62" selection-end-column="0" />
+        <state relative-caret-position="287">
+          <caret line="210" column="33" selection-start-line="210" selection-start-column="33" selection-end-line="210" selection-end-column="33" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
             <element signature="e#862#886#0" expanded="false" />

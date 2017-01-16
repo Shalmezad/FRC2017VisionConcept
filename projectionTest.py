@@ -111,6 +111,7 @@ def drawTopDownBase(screen, zero_x, zero_y):
     pygame.draw.line(screen, YELLOW, peg_top, peg_bottom,int(PEG_WIDTH_PIXELS))
 
 def drawTopDown(screen):
+    screen.set_clip(top_down_view)
     pygame.draw.rect(screen, DARK_BLUE, top_down_view)
     # We're going to define 0, 0 as being the BASE of the peg (right against the lifter)
     # The center of our view is 0 x:
@@ -175,7 +176,8 @@ def drawPoint(screen,point, view):
 
 
 def drawCamera(screen):
-    pygame.draw.rect(screen, BLACK, [camera_size[0], 0, camera_size[0], camera_size[1]])
+    screen.set_clip(camera_view)
+    pygame.draw.rect(screen, BLACK, camera_view)
     # Figure out where our rects are in 3d space:
     # LEFT
     left_target_top_left_x = -1 * VISION_FULL_WIDTH_INCHES/2
@@ -206,6 +208,7 @@ def drawCamera(screen):
 
 
 def drawDebugger(screen, font):
+    screen.set_clip(debugger_view)
     x = debugger_view[0] + 4
     y = debugger_view[1] + 4
     text = font.render("Debugger", True, (0, 128, 0))
