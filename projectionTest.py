@@ -183,6 +183,15 @@ def drawPoint(screen,point, view):
     point2 = (int(center_x + point[0]), int(center_y + point[1]))
     pygame.draw.circle(screen, LIGHT_GRAY, point2,4)
 
+def drawPolygon(screen, points, view):
+    center_x = view[0] + view[2]/2
+    center_y = view[1] + view[3]/2
+    points2 = []
+    for point in points:
+        new_point = get2dPoint(point[0],point[1],point[2], camera_size[0], camera_size[1], CAMERA_VIEW_ANGLE_WIDTH_DEGREES, CAMERA_VIEW_ANGLE_HEIGHT_DEGREES)
+        point2 = (int(center_x + new_point[0]), int(center_y + new_point[1]))
+        points2.append(point2)
+    pygame.draw.polygon(screen, GREEN, points2, 0)
 
 def drawCamera(screen):
     screen.set_clip(camera_view)
@@ -226,10 +235,14 @@ def drawCamera(screen):
 
     points = [left_target_top_left, left_target_top_right, left_target_bottom_left, left_target_bottom_right,
               right_target_top_left, right_target_top_right,right_target_bottom_left, right_target_bottom_right]
+    left_target = [left_target_top_left, left_target_top_right, left_target_bottom_right, left_target_bottom_left]
+    right_target = [right_target_top_left, right_target_top_right, right_target_bottom_right, right_target_bottom_left]
     # Get their 2d points:
     for point in points:
         new_point = get2dPoint(point[0],point[1],point[2], camera_size[0], camera_size[1], CAMERA_VIEW_ANGLE_WIDTH_DEGREES, CAMERA_VIEW_ANGLE_HEIGHT_DEGREES)
         drawPoint(screen, new_point, camera_view)
+    drawPolygon(screen, left_target, camera_view)
+    drawPolygon(screen, right_target, camera_view)
 
 
 def drawDebugger(screen, font):
@@ -276,19 +289,36 @@ def main():
         global camera_position_inches
         turn_speed_degrees = 0.6
         move_speed_inches = 0.3
-        if keys[pygame.K_LEFT]:
+        # TURN
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             camera_angle_degrees -= turn_speed_degrees
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             camera_angle_degrees += turn_speed_degrees
-        if keys[pygame.K_DOWN]:
+        # FORWARD BACK
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             camera_angle_radians = math.radians(camera_angle_degrees + 90)
             x_delta = math.cos(camera_angle_radians)
             y_delta = math.sin(camera_angle_radians)
             new_x = camera_position_inches[0] + move_speed_inches * x_delta
             new_y = camera_position_inches[1] + move_speed_inches * y_delta
             camera_position_inches = (new_x, new_y)
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
             camera_angle_radians = math.radians(camera_angle_degrees + 90)
+            x_delta = math.cos(camera_angle_radians)
+            y_delta = math.sin(camera_angle_radians)
+            new_x = camera_position_inches[0] + move_speed_inches * x_delta * -1
+            new_y = camera_position_inches[1] + move_speed_inches * y_delta * -1
+            camera_position_inches = (new_x, new_y)
+        # STRAFE
+        if keys[pygame.K_e]:
+            camera_angle_radians = math.radians(camera_angle_degrees)
+            x_delta = math.cos(camera_angle_radians)
+            y_delta = math.sin(camera_angle_radians)
+            new_x = camera_position_inches[0] + move_speed_inches * x_delta
+            new_y = camera_position_inches[1] + move_speed_inches * y_delta
+            camera_position_inches = (new_x, new_y)
+        if keys[pygame.K_q]:
+            camera_angle_radians = math.radians(camera_angle_degrees)
             x_delta = math.cos(camera_angle_radians)
             y_delta = math.sin(camera_angle_radians)
             new_x = camera_position_inches[0] + move_speed_inches * x_delta * -1
