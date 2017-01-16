@@ -15,9 +15,12 @@ debugger_view = [camera_size[0], camera_size[1], camera_size[0], camera_size[1]]
 
 camera_position_inches = (0, 20)
 camera_angle_degrees = 0 # We'll defined 0 as facing target dead on.
-CAMERA_VIEW_ANGLE_WIDTH_DEGREES = 90
+camera_height_inches = 10
+# https://www.chiefdelphi.com/forums/showthread.php?t=144285
+CAMERA_VIEW_ANGLE_WIDTH_DEGREES = 60
 CAMERA_VIEW_ANGLE_WIDTH_RADIANS = math.radians(CAMERA_VIEW_ANGLE_WIDTH_DEGREES)
 CAMERA_VIEW_ANGLE_HALF_WIDTH_RADIANS = CAMERA_VIEW_ANGLE_WIDTH_RADIANS/2
+CAMERA_VIEW_ANGLE_HEIGHT_DEGREES = 34
 
 
 # region FIELD CONSTANTS
@@ -52,6 +55,10 @@ VISION_FULL_WIDTH_INCHES = 10.25
 SINGLE_STRIPE_WIDTH_INCHES = 2
 VISION_FULL_WIDTH_PIXELS = VISION_FULL_WIDTH_INCHES * PIXELS_PER_INCH
 SINGLE_STRIPE_WIDTH_PIXELS = SINGLE_STRIPE_WIDTH_INCHES * PIXELS_PER_INCH
+# Bottom is 10.75 off ground:
+SINGLE_STRIPE_BOTTOM_INCHES = 10.75
+# And goes up 5 inches:
+SINGLE_STRIPE_TOP_INCHES = 5
 # endregion
 
 def drawTopDownBase(screen, zero_x, zero_y):
@@ -137,22 +144,65 @@ def drawTopDown(screen):
 
 # http://stackoverflow.com/a/39005543/978509
 # Man I hope their math is right...
-def get2dPoint(x,y,z, screen_width, screen_height, fov):
-    x_prime = ( x * ( screen_width / 2 ) / math.tan( fov / 2 ) ) / ( z + ( ( screen_width / 2 ) / math.tan( fov / 2 ) ) )
-    y_prime = ( y * ( screen_height / 2 ) / math.tan( fov / 2 ) ) / ( z + ( ( screen_height / 2 ) / math.tan( fov / 2 ) ) )
-    return (x_prime, y_prime)
+# z is up down (+z = up)
+# x is left/right of the peg
+# y is in/out of the peg ( +y = out of peg)
+def get2dPoint(x,y,z, screen_width, screen_height, fov_degrees):
+    #x_prime = ( x * ( screen_width / 2 ) / math.tan( fov / 2 ) ) / ( z + ( ( screen_width / 2 ) / math.tan( fov / 2 ) ) )
+    #y_prime = ( y * ( screen_height / 2 ) / math.tan( fov / 2 ) ) / ( z + ( ( screen_height / 2 ) / math.tan( fov / 2 ) ) )
+    #return (x_prime, y_prime)
+    # Math shouldn't be that bad, we should be able to handle this
+    # So, we have our camera position/angle
+    # What we need is to figure out the angle between the point, and our camera center
+    # So, find the angle to the camera:
+    angle_x = math.degrees(math.atan2(y-camera_position_inches[1], x-camera_position_inches[0]))+90
+    # Adjust based on camera angle:
+    angle_x -= camera_angle_degrees
+    # And based on our fov...
+    x = screen_width * (angle_x/fov_degrees)
+
+
+
+    y = 0
+    return (x,y)
 
 def drawPoint(screen,point, view):
-    point2 = (view[0] + point[0], view[1] + point[1])
+    # So, the points are such that 0,0 is center...
+    center_x = view[0] + view[2]/2
+    center_y = view[1] + view[3]/2
+    point2 = (int(center_x + point[0]), int(center_y + point[1]))
     pygame.draw.circle(screen, LIGHT_GRAY, point2,4)
 
 
 def drawCamera(screen):
     pygame.draw.rect(screen, BLACK, [camera_size[0], 0, camera_size[0], camera_size[1]])
     # Figure out where our rects are in 3d space:
-    # Translate them based on the camera position:
+    # LEFT
+    left_target_top_left_x = -1 * VISION_FULL_WIDTH_INCHES/2
+    left_target_top_left_y = 0
+    left_target_top_left_z = SINGLE_STRIPE_TOP_INCHES
+    left_target_top_left = (left_target_top_left_x, left_target_top_left_y,left_target_top_left_z)
+    left_target_top_right_x = left_target_top_left_x + SINGLE_STRIPE_WIDTH_INCHES
+    left_target_top_right_y = 0
+    left_target_top_right_z = left_target_top_left_x
+    left_target_top_right = (left_target_top_right_x,left_target_top_right_y,left_target_top_right_y)
+
+    # RIGHT
+    right_target_top_right_x = VISION_FULL_WIDTH_INCHES/2
+    right_target_top_right_y = 0
+    right_target_top_right_z = SINGLE_STRIPE_TOP_INCHES
+    right_target_top_right = (right_target_top_right_x,right_target_top_right_y,right_target_top_right_z)
+    right_target_top_left_x = right_target_top_right_x - SINGLE_STRIPE_WIDTH_INCHES
+    right_target_top_left_y = 0
+    right_target_top_left_z = right_target_top_right_z
+    right_target_top_left = (right_target_top_left_x,right_target_top_left_y,right_target_top_left_z)
+
+    points = [left_target_top_left, left_target_top_right,
+              right_target_top_left, right_target_top_right]
     # Get their 2d points:
-    drawPoint(screen, (50,50), camera_view)
+    for point in points:
+        new_point = get2dPoint(point[0],point[1],point[2], camera_size[0], camera_size[1], CAMERA_VIEW_ANGLE_WIDTH_DEGREES)
+        drawPoint(screen, new_point, camera_view)
 
 
 def drawDebugger(screen, font):
